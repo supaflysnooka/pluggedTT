@@ -1,10 +1,10 @@
-const defaultConfig = {
+const defaultOptions = {
     autobop: true,
     volume: 0.5,
     stickershow: false,
 }
 
-let options = { ... defaultConfig }
+// let options = { ... defaultConfig }
 
 
 const coolIds = [
