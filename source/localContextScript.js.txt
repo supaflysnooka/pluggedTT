@@ -1,4 +1,4 @@
-const defaultOptions = {
+const defaultConfig = {
     autobop: true,
     volume: 0.5,
     stickershow: false,
