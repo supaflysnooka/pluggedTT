@@ -1,42 +1,44 @@
-//const defaultOptions = {
-//    autobop: true,
-//    volume: 0.5,
-//    stickershow: false,
-//}
+const defaultOptions = {
+    autobop: true,
+    volume: 0.5,
+    stickershow: false,
+};
 
-// let options = { ... defaultConfig }
+let options = { ... defaultOptions };
 
 
 const coolIds = [
     "603fc3143f4bfc001a2ffda8", //nt
     "603fdf043f4bfc001c27d1b2", // Alfie
-]
-let debug = false
+];
 
-const localStoragePrefix = 'pluggedTT-'
+let debug = false;
 
-let currentSong = null
+const localStoragePrefix = 'pluggedTT-';
 
-let nyanStartX = -180 + 68
-let nyanEndX = 500
-let frames = 10
-let dx = (nyanEndX - nyanStartX) / frames
+let currentSong = null;
+
+let nyanStartX = -180 + 68;
+let nyanEndX = 500;
+let frames = 10;
+let dx = (nyanEndX - nyanStartX) / frames;
 let nyanCatPosition = {
     top: 56,
     left: nyanStartX,
-}
-let updateStickersTimeout = null
+};
+
+let updateStickersTimeout = null;
 let stickershowEnabled = false;
-let unmutedVolume = null
-let unmuteWhenSongIsDone = false
+let unmutedVolume = null;
+let unmuteWhenSongIsDone = false;
 let log = (...args) => {
     if (debug) {
-        console.log(...args)
+        console.log(...args);
     }
-}
+};
 const startStickerShow = async () => {
     if (stickershowEnabled) {
-        clearTimeout(updateStickersTimeout)
+        clearTimeout(updateStickersTimeout);
     }
     const placed = await fetch("https://deep-cut.fm/api/sticker.place", {
         "headers": {
@@ -62,17 +64,17 @@ const startStickerShow = async () => {
         console.log(response)
         stopStickers()
         return
-    }
+    };
     nyanCatPosition.left += dx
     if (nyanCatPosition.left > nyanEndX) {
         nyanCatPosition.left = nyanStartX
-    }
+    };
 
     updateStickersTimeout = setTimeout(startStickerShow, 1000)
-}
+};
 const stopStickers = () => {
     clearTimeout(updateStickersTimeout)
-}
+};
 
 const checkLocalStorage = () => {
     Object.keys(options).forEach(opt => {
@@ -82,14 +84,14 @@ const checkLocalStorage = () => {
             options[opt] = parsed
         }
     })
-}
+};
 checkLocalStorage()
 
 const saveToLocalStorage = () => {
     Object.keys(options).forEach(opt => {
         window.localStorage.setItem(`${localStoragePrefix}${opt}`, JSON.stringify(options[opt]))
     })
-}
+};
 
 saveToLocalStorage()
 
@@ -99,7 +101,7 @@ const optionsStorage = {
         options = { ... options, ...newOptions}
         saveToLocalStorage()
     }
-}
+};
 
 // configure autobopping, check every 10 seconds
 const autobopVote = async () => {
@@ -111,7 +113,7 @@ const autobopVote = async () => {
         log('ab click')
         button.click()
     }
-}
+};
 
 const runTurntableCode = async () => {
     const { autobop, volume, stickershow, playlistOptionsVisible } = options
@@ -143,7 +145,7 @@ const runTurntableCode = async () => {
                 // checkForStickerShow()
             }
         })
-    }
+    };
 
     setTimeout(() => {
         // remove old existing modal if there is one
@@ -169,7 +171,7 @@ const runTurntableCode = async () => {
             unmutedVolume = null
             unmuteWhenSongIsDone = false
             setVideoVolume(volume)
-        })
+        });
 
         volumeInput.addEventListener('change', async (event) => {
             const volume = +event.target.value;
