@@ -1,7 +1,41 @@
+// jshint esversion: 9
+
 const defaultOptions = {
     autobop: true,
     volume: 0.5,
     stickershow: false,
+};
+
+let options = { ... defaultOptions };
+
+
+const coolIds = [
+    "603fc3143f4bfc001a2ffda8", //nt
+    "603fdf043f4bfc001c27d1b2", // Alfie
+];
+  
+let debug = false;
+
+const localStoragePrefix = 'pluggedTT-';
+
+let currentSong = null;
+
+let nyanStartX = -180 + 68;
+let nyanEndX = 500;
+let frames = 10;
+let dx = (nyanEndX - nyanStartX) / frames;
+let nyanCatPosition = {
+    top: 56,
+    left: nyanStartX,
+};
+let updateStickersTimeout = null;
+let stickershowEnabled = false;
+let unmutedVolume = null;
+let unmuteWhenSongIsDone = false;
+let log = (...args) => {
+    if (debug) {
+        console.log(...args);
+    }
 };
 
 const startStickerShow = async () => {
@@ -136,204 +170,205 @@ const runTurntableCode = async () => {
 
         volumeInput.addEventListener('input', async (event) => {
             const volume = +event.target.value;
-            unmutedVolume = null
-            unmuteWhenSongIsDone = false
+            unmutedVolume = null;
+            unmuteWhenSongIsDone = false;
             setVideoVolume(volume);
         });
 
         volumeInput.addEventListener('change', async (event) => {
             const volume = +event.target.value;
-            unmutedVolume = null
-            unmuteWhenSongIsDone = false
-            await optionsStorage.set({ volume })
-            setVideoVolume(volume)
-        })
+            unmutedVolume = null;
+            unmuteWhenSongIsDone = false;
+            await optionsStorage.set({ volume });
+            setVideoVolume(volume);
+        });
 
-        const muteButton = pluggedTTContainer.querySelector('.muteButton')
+        const muteButton = pluggedTTContainer.querySelector('.muteButton');
         const toggleMute = () => {
             if (unmutedVolume === null) {
-                unmutedVolume = options.volume
-                volumeInput.value = 0
-                setVideoVolume(0)
+                unmutedVolume = options.volume;
+                volumeInput.value = 0;
+                setVideoVolume(0);
             } else {
-                setVideoVolume(unmutedVolume)
-                console.log('unmute')
-                console.log(unmutedVolume)
-                volumeInput.value = unmutedVolume
-                console.log(volumeInput.volume)
-                unmutedVolume = null
+                setVideoVolume(unmutedVolume);
+                console.log('unmute');
+                console.log(unmutedVolume);
+                volumeInput.value = unmutedVolume;
+                console.log(volumeInput.volume);
+                unmutedVolume = null;
             }
-        }
-        muteButton.addEventListener('click', toggleMute)
+        };
+        muteButton.addEventListener('click', toggleMute);
 
 
-        const muteUntilNextSong = pluggedTTContainer.querySelector('.muteUntilNext')
+        const muteUntilNextSong = pluggedTTContainer.querySelector('.muteUntilNext');
         muteUntilNextSong.addEventListener('click', () => {
             if (unmutedVolume === null) {
-                toggleMute()
-                unmuteWhenSongIsDone = true
+                toggleMute();
+                unmuteWhenSongIsDone = true;
             }
 
-        })
+        });
         newSongCallbacks.push((message) => {
             if (unmuteWhenSongIsDone) {
-                toggleMute()
-                unmuteWhenSongIsDone = false
+                toggleMute();
+                unmuteWhenSongIsDone = false;
             }
-        })
+        });
 
-        const showHideButtons = [...pluggedTTContainer.querySelectorAll('.playlistFeatureButton input')]
+        const showHideButtons = [...pluggedTTContainer.querySelectorAll('.playlistFeatureButton input')];
         showHideButtons.forEach(button =>
             button.addEventListener('click', async () => {
-                const buttonContainer = pluggedTTContainer.querySelector('.playlistFeatureButton')
-                const newValue = !options.playlistOptionsVisible
-                buttonContainer.classList.toggle('show', newValue)
-                buttonContainer.classList.toggle('hide', !newValue)
-                pluggedTTContainer.querySelector('.playlistFeatures').classList.toggle('show', newValue)
-                await optionsStorage.set({ playlistOptionsVisible: newValue })
+                const buttonContainer = pluggedTTContainer.querySelector('.playlistFeatureButton');
+                const newValue = !options.playlistOptionsVisible;
+                buttonContainer.classList.toggle('show', newValue);
+                buttonContainer.classList.toggle('hide', !newValue);
+                pluggedTTContainer.querySelector('.playlistFeatures').classList.toggle('show', newValue);
+                await optionsStorage.set({ playlistOptionsVisible: newValue });
             })
-        )
-        pluggedTTContainer.querySelector('.playlistFeatures').classList.toggle('show', playlistOptionsVisible)
+        );
+        pluggedTTContainer.querySelector('.playlistFeatures').classList.toggle('show', playlistOptionsVisible);
 
-        const shuffleButton = pluggedTTContainer.querySelector('.shufflePlaylist')
-        let shuffleCount = 0
-        let shuffleTimeout = null
+        const shuffleButton = pluggedTTContainer.querySelector('.shufflePlaylist');
+        let shuffleCount = 0;
+        let shuffleTimeout = null;
         shuffleButton.addEventListener('click', () => {
             if (shuffleCount !== 0) {
-                const cancel = window.confirm('Stop shuffling?')
+                const cancel = window.confirm('Stop shuffling?');
                 if (cancel) {
-                    clearTimeout(shuffleTimeout)
-                    shuffleCount = 0
-                    alert('shuffling stopped, refresh or switch playlists to see updated playlist')
-                    shuffleButton.value = 'Shuffle Playlist'
-                    return
+                    clearTimeout(shuffleTimeout);
+                    shuffleCount = 0;
+                    alert('shuffling stopped, refresh or switch playlists to see updated playlist');
+                    shuffleButton.value = 'Shuffle Playlist';
+                    return;
                 }
             }
-            const doit = window.confirm(`Are you sure you want to shuffle the playlist named "${turntable.playlist.activePlaylist}"? You'll need to refresh after to see the results.`)
-            if (!doit) { return }
-            shuffleCount = turntable.playlist.fileids.length
-            shuffle()
-        })
+            const doit = window.confirm(`Are you sure you want to shuffle the playlist named "${turntable.playlist.activePlaylist}"? You'll need to refresh after to see the results.`);
+            if (!doit);
+            { 
+              return; 
+            }
+            shuffleCount = turntable.playlist.fileids.length;
+            shuffle();
+        });
         const shuffle = async () => {
             if (shuffleCount <= 0) {
-                shuffleButton.value = 'Shuffle Playlist'
-                alert('shuffle complete, refresh or switch playlists to see updated playlist')
+                shuffleButton.value = 'Shuffle Playlist';
+                alert('shuffle complete, refresh or switch playlists to see updated playlist');
             } else {
-                shuffleButton.value = `Shuffling ${shuffleCount}`
+                shuffleButton.value = `Shuffling ${shuffleCount}`;
                 // this shuffles I guess?
-                const from = ~~(Math.random() * turntable.playlist.fileids.length)
-                const to = ~~(Math.random() * turntable.playlist.fileids.length)
-                await turntable.playlist.reorder(from, to)
-                shuffleCount --
-                shuffleTimeout = setTimeout(shuffle, 1000)
+                const from = (Math.random() * turntable.playlist.fileids.length);
+                const to = (Math.random() * turntable.playlist.fileids.length);
+                await turntable.playlist.reorder(from, to);
+                shuffleCount --;
+                shuffleTimeout = setTimeout(shuffle, 1000);
             }
-        }
-        const exportPlaylistButton = pluggedTTContainer.querySelector('.exportPlaylist')
+        };
+        const exportPlaylistButton = pluggedTTContainer.querySelector('.exportPlaylist');
         exportPlaylistButton.addEventListener('click', async () => {
             const data = turntable.playlist.fileids
                 .map(d => turntable.playlist.songsByFid[d])
                 .map(d => {
-                    let url = ''
-                    let isYT = false
-                    let isSC = false
+                    let url = '';
+                    let isYT = false;
+                    let isSC = false;
                     if (d.source === 'yt') {
-                        isYT = true
+                        isYT = true;
                     } else if (d.source === 'sc') {
-                        isSC = true
+                        isSC = true;
                     } else if (d.metadata.scid) {
-                        isSC = true
+                        isSC = true;
                     } else if (d.metadata.ytid) {
-                        isYT = true
+                        isYT = true;
                     }
                     if (isYT) {
-                        url = `https://www.youtube.com/watch?v=${d.sourceid}`
+                        url = `https://www.youtube.com/watch?v=${d.sourceid}`;
                     } else if (isSC) {
-                        url = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${d.sourceid}`
+                        url = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${d.sourceid}`;
                     }
-                    return `${d.metadata.song},${d.metadata.artist},${url}`
-                }).join('\n')
-            const headers = `song,artist,url\n`
-            const full = headers + data
-            var pom = pluggedTTContainer.querySelector('.downloadPlaylist')
+                    return `${d.metadata.song},${d.metadata.artist},${url}`;
+                }).join('\n');
+            const headers = `song,artist,url\n`;
+            const full = headers + data;
+            var pom = pluggedTTContainer.querySelector('.downloadPlaylist');
             pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(full));
             pom.setAttribute('download', `${turntable.playlist.activePlaylist}.txt`);
-            pom.style.display = 'inline'
-        })
+            pom.style.display = 'inline';
+        });
 
         // hook up autobopper
-        const autobopInput = pluggedTTContainer.querySelector('.autobopInput')
-        autobopInput.checked = autobop
+        const autobopInput = pluggedTTContainer.querySelector('.autobopInput');
+        autobopInput.checked = autobop;
         autobopInput.addEventListener('change', async (event) => {
-            const autobop = event.target.checked
-            await optionsStorage.set({ autobop })
-            scheduleAutobop()
-        })
-        scheduleAutobop()
+            const autobop = event.target.checked;
+            await optionsStorage.set({ autobop });
+            scheduleAutobop();
+        });
+        scheduleAutobop();
 
         // hook up stickershow
-        const stickershowInput = pluggedTTContainer.querySelector('.stickershowInput')
-        stickershowInput.checked = stickershow
+        const stickershowInput = pluggedTTContainer.querySelector('.stickershowInput');
+        stickershowInput.checked = stickershow;
         stickershowInput.addEventListener('change', async (event) => {
-            const stickershow = event.target.checked
-            await optionsStorage.set({ stickershow })
+            const stickershow = event.target.checked;
+            await optionsStorage.set({ stickershow });
             if (stickershow) {
-                checkForStickerShow()
+                checkForStickerShow();
             } else {
-                stopStickers()
+                stopStickers();
             }
-        })
+        });
 
         if (coolIds.includes(turntable.user.id)) {
-            debug = true
-            pluggedTTContainer.querySelector('.hidden').classList.remove('hidden')
+            debug = true;
+            pluggedTTContainer.querySelector('.hidden').classList.remove('hidden');
         }
 
         document.addEventListener('visibilitychange', () => {
             if (document.visible) {
                 // checkForStickerShow()
-                scheduleAutobop()
-                $(window).focus()
+                scheduleAutobop();
+                $(window).focus();
             }
-        })
+        });
 
         // might need this for long songs
         setInterval(() => {
-            $(window).focus()
-        }, 1000 * 60)
-    }, 1)
+            $(window).focus();
+        }, 1000 * 60);
+    }, 1);
 
-
-
-}
+};
 
 const checkForStickerShow = () => {
-    const { stickershow } = options
+    const { stickershow } = options;
 
     if (coolIds.includes(turntable.user.id) && stickershow && currentSong && turntable.user.id === currentSong.djid) {
-        startStickerShow()
+        startStickerShow();
     }
-}
+};
 
 const scheduleAutobop = () => {
-    log('schedule ab')
-    const autobopTimer = Math.random() * 10000 + 10000
-    setTimeout(autobopVote, autobopTimer)
-}
+    log('schedule ab');
+    const autobopTimer = Math.random() * 10000 + 10000;
+    setTimeout(autobopVote, autobopTimer);
+};
 
-let retries = 20
-let retrySetVolumeTimeout = null
+let retries = 20;
+let retrySetVolumeTimeout = null;
 const setVideoVolume = (volume) => {
     try {
-        turntablePlayer.setVolume(volume * 4)
+        turntablePlayer.setVolume(volume * 4);
     } catch (e) {
-        log(e, e.message)
-        retries --
+        log(e, e.message);
+        retries --;
         if (retries) {
-            clearTimeout(retrySetVolumeTimeout)
-            retrySetVolumeTimeout= setTimeout(() => setVideoVolume(volume), 1000)
+            clearTimeout(retrySetVolumeTimeout);
+            retrySetVolumeTimeout= setTimeout(() => setVideoVolume(volume), 1000);
         }
     }
-}
+};
 
 
 const init = async () => {
@@ -341,16 +376,15 @@ const init = async () => {
     if (document.location.hostname.match(/deep-cut.fm/)) {
         const waitForTurntable = () => {
             if (turntable) {
-                runTurntableCode()
-                setTimeout(runTurntableCode, 3000)
+                runTurntableCode();
+                setTimeout(runTurntableCode, 3000);
             } else {
-                console.log('waiting')
-                setTimeout(waitForTurntable, 100)
+                console.log('waiting');
+                setTimeout(waitForTurntable, 100);
             }
-        }
-        waitForTurntable()
+        };
+        waitForTurntable();
     }
-}
+};
 
-
-init()
+init();
