@@ -1,60 +1,139 @@
-const runTurntableCode = async () => {
-    const { autobop, volume, stickershow, playlistOptionsVisible } = options
+const startStickerShow = async () => {
+    if (stickershowEnabled) {
+        clearTimeout(updateStickersTimeout);
+    }
+    const placed = await fetch("https://deep-cut.fm/api/sticker.place", {
+        "headers": {
+            "accept": "application/json, text/javascript, */*; q=0.01",
+            "accept-language": "en-US,en;q=0.9",
+            "content-type": "application/json; charset=UTF-8",
+            "sec-ch-ua": "\"Chromium\";v=\"88\", \"Google Chrome\";v=\"88\", \";Not A Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        "referrer": "https://deep-cut.fm/profile/stickers",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": `{"placements":[{"transform":{"rotate":"0deg"},"top":56,"angle":0,"sticker_id":"603bdf45468d7b3b8ae41ee5","left":${nyanCatPosition.left}}],"userid":"603fc3143f4bfc001a2ffda8","userauth":"gBbZFQNuvlbQPItpunrjAJeq","client":"web","decache":1614999096614}`,
+        "method": "POST",
+        "mode": "cors",
+        "credentials": "include"
+    });
+    const response = await placed.json();
+    if (response[0] === false) {
+        console.log(response);
+        stopStickers();
+        return;
+    }
+    nyanCatPosition.left += dx;
+    if (nyanCatPosition.left > nyanEndX) {
+        nyanCatPosition.left = nyanStartX;
+    }
 
-    let newSongCallbacks = []
+    updateStickersTimeout = setTimeout(startStickerShow, 1000);
+};
+const stopStickers = () => {
+    clearTimeout(updateStickersTimeout);
+};
+
+const checkLocalStorage = () => {
+    Object.keys(options).forEach(opt => {
+        const value = window.localStorage.getItem(`${localStoragePrefix}${opt}`);
+        if (value) {
+            const parsed = JSON.parse(value);
+            options[opt] = parsed;
+        }
+    });
+};
+checkLocalStorage();
+
+const saveToLocalStorage = () => {
+    Object.keys(options).forEach(opt => {
+        window.localStorage.setItem(`${localStoragePrefix}${opt}`, JSON.stringify(options[opt]));
+    });
+};
+
+saveToLocalStorage();
+
+const optionsStorage = {
+    getAll: () => options,
+    set: (newOptions) => {
+        options = { ... options, ...newOptions};
+        saveToLocalStorage();
+    }
+};
+
+// configure autobopping, check every 10 seconds
+const autobopVote = async () => {
+    log('ab vote call');
+    const { autobop } = await optionsStorage.getAll();
+    const button = document.querySelector('.awesome-button:not(.selected)');
+    const lamed = document.querySelector('.lame-button.selected');
+    if (button && autobop && !lamed) {
+        log('ab click');
+        button.click();
+    }
+};
+
+const runTurntableCode = async () => {
+    const { autobop, volume, stickershow, playlistOptionsVisible } = options;
+
+    let newSongCallbacks = [];
     if (turntable && turntable.socket) {
-        log('add socket listener')
+        log('add socket listener');
         turntable.socket.addEventListener('message', messageString => {
-            const message = JSON.parse(messageString)
+            const message = JSON.parse(messageString);
             if (message.room && message.room.metadata && message.room.metadata.current_song) {
-                currentSong = message.room.metadata.current_song
+                currentSong = message.room.metadata.current_song;
             }
 
             if (message.command === 'newsong') {
                 // get around anti idle stuff..
-                $(window).focus()
+                $(window).focus();
 
-                log(currentSong)
+                log(currentSong);
                 if (currentSong) {
-                    const djid = currentSong.djid
-                    const me = turntable.user.id
-                    log(djid, me)
+                    const djid = currentSong.djid;
+                    const me = turntable.user.id;
+                    log(djid, me);
                     if (djid !== me) {
-                        scheduleAutobop()
-                        stopStickers()
+                        scheduleAutobop();
+                        stopStickers();
                     }
                 }
-                newSongCallbacks.forEach(cb => cb(message))
+                newSongCallbacks.forEach(cb => cb(message));
                 // checkForStickerShow()
             }
-        })
+        });
     }
 
     setTimeout(() => {
         // remove old existing modal if there is one
-        let pluggedTTContainer = document.querySelector('.pluggedTT')
+        let pluggedTTContainer = document.querySelector('.pluggedTT');
         if (pluggedTTContainer) {
-            pluggedTTContainer.parentElement.removeChild(pluggedTTContainer)
+            pluggedTTContainer.parentElement.removeChild(pluggedTTContainer);
         }
 
         // inject our  into the page
-        pluggedTTContainer = document.createElement('div')
-        pluggedTTContainer.classList.add('pluggedTT')
-        const template = document.querySelector('#pluggedTTModal')
-        pluggedTTContainer.innerHTML = template.innerHTML
-        document.body.appendChild(pluggedTTContainer)
+        pluggedTTContainer = document.createElement('div');
+        pluggedTTContainer.classList.add('pluggedTT');
+        const template = document.querySelector('#pluggedTTModal');
+        pluggedTTContainer.innerHTML = template.innerHTML;
+        document.body.appendChild(pluggedTTContainer);
 
         // hook up volume input
-        const volumeInput = pluggedTTContainer.querySelector('.volumeInput')
-        volumeInput.value = volume
-        setVideoVolume(volume)
+        const volumeInput = pluggedTTContainer.querySelector('.volumeInput');
+        volumeInput.value = volume;
+        setVideoVolume(volume);
 
         volumeInput.addEventListener('input', async (event) => {
             const volume = +event.target.value;
             unmutedVolume = null
             unmuteWhenSongIsDone = false
-            setVideoVolume(volume)
-        })
+            setVideoVolume(volume);
+        });
 
         volumeInput.addEventListener('change', async (event) => {
             const volume = +event.target.value;
@@ -253,7 +332,7 @@ const setVideoVolume = (volume) => {
 
 const init = async () => {
     // perhaps these should be different content scripts! hmm yeah definitely!
-    if (document.location.hostname.match(/turntable.fm/)) {
+    if (document.location.hostname.match(/deep-cut.fm/)) {
         const waitForTurntable = () => {
             if (turntable) {
                 runTurntableCode()
