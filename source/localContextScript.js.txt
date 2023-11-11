@@ -1,15 +1,3 @@
-// configure autobopping, check every 10 seconds
-const autobopVote = async () => {
-    log('ab vote call')
-    const { autobop } = await optionsStorage.getAll()
-    const button = document.querySelector('.awesome-button:not(.selected)')
-    const lamed = document.querySelector('.lame-button.selected')
-    if (button && autobop && !lamed) {
-        log('ab click')
-        button.click()
-    }
-}
-
 const runTurntableCode = async () => {
     const { autobop, volume, stickershow, playlistOptionsVisible } = options
 
