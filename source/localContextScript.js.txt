@@ -4,7 +4,7 @@ const defaultOptions = {
     stickershow: false,
 }
 
-let options = { ... defaultOptions }
+let options = { ... defaultConfig }
 
 
 const coolIds = [
