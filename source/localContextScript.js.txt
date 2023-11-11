@@ -38,7 +38,7 @@ const startStickerShow = async () => {
     if (stickershowEnabled) {
         clearTimeout(updateStickersTimeout)
     }
-    const placed = await fetch("https://turntable.fm/api/sticker.place", {
+    const placed = await fetch("https://deep-cut.fm/api/sticker.place", {
         "headers": {
             "accept": "application/json, text/javascript, */*; q=0.01",
             "accept-language": "en-US,en;q=0.9",
@@ -50,7 +50,7 @@ const startStickerShow = async () => {
             "sec-fetch-site": "same-origin",
             "x-requested-with": "XMLHttpRequest"
         },
-        "referrer": "https://turntable.fm/profile/stickers",
+        "referrer": "https://deep-cut.fm/profile/stickers",
         "referrerPolicy": "strict-origin-when-cross-origin",
         "body": `{"placements":[{"transform":{"rotate":"0deg"},"top":56,"angle":0,"sticker_id":"603bdf45468d7b3b8ae41ee5","left":${nyanCatPosition.left}}],"userid":"603fc3143f4bfc001a2ffda8","userauth":"gBbZFQNuvlbQPItpunrjAJeq","client":"web","decache":1614999096614}`,
         "method": "POST",
@@ -368,7 +368,7 @@ const setVideoVolume = (volume) => {
 
 const init = async () => {
     // perhaps these should be different content scripts! hmm yeah definitely!
-    if (document.location.hostname.match(/turntable.fm/)) {
+    if (document.location.hostname.match(/deep-cut.fm/)) {
         const waitForTurntable = () => {
             if (turntable) {
                 runTurntableCode()
