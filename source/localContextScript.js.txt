@@ -1,9 +1,3 @@
-const defaultOptions = {
-    autobop: true,
-    volume: 0.5,
-    stickershow: false,
-};
-
 const startStickerShow = async () => {
     if (stickershowEnabled) {
         clearTimeout(updateStickersTimeout);
