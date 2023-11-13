@@ -289,7 +289,7 @@ const runTurntableCode = async () => {
                     }
                     return `${d.metadata.song},${d.metadata.artist},${url}`;
                 }).join('\n');
-            const headers = `artist,song,url\n`;
+            const headers = `song,artist,url\n`;
             const full = headers + data;
             var pom = pluggedTTContainer.querySelector('.downloadPlaylist');
             pom.setAttribute('href', 'data:text/plain;charset=ISO-8859-8,' + encodeURIComponent(full));
