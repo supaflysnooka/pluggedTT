@@ -286,10 +286,11 @@ const runTurntableCode = async () => {
                         url = `https://www.youtube.com/watch?v=${d.sourceid}`;
                     } else if (isSC) {
                         url = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${d.sourceid}`;
+                        title = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${d.track.title}`;
                     }
-                    return `${d.metadata.artist},${d.metadata.song},${url}`;
+                    return `${d.metadata.artist},${d.metadata.song},${url},${title}`;
                 }).join('\n');
-            const headers = `artist,song,url\n`;
+            const headers = `artist,song,url,title\n`;
             const full = headers + data;
             var pom = pluggedTTContainer.querySelector('.downloadPlaylist');
             pom.setAttribute('href', 'data:text/plain;charset=ISO-8859-8,' + encodeURIComponent(full));
