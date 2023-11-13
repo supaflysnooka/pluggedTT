@@ -287,9 +287,9 @@ const runTurntableCode = async () => {
                     } else if (isSC) {
                         url = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${d.sourceid}`;
                     }
-                    return `${d.metadata.song},${d.metadata.artist},${url}`;
+                    return `${d.metadata.artist},${d.metadata.song},${url}`;
                 }).join('\n');
-            const headers = `song,artist,url\n`;
+            const headers = `artist,song,url\n`;
             const full = headers + data;
             var pom = pluggedTTContainer.querySelector('.downloadPlaylist');
             pom.setAttribute('href', 'data:text/plain;charset=ISO-8859-8,' + encodeURIComponent(full));
