@@ -292,7 +292,7 @@ const runTurntableCode = async () => {
             const headers = `song,artist,url\n`;
             const full = headers + data;
             var pom = pluggedTTContainer.querySelector('.downloadPlaylist');
-            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(full));
+            pom.setAttribute('href', 'data:text/plain;charset=ISO-8859-8,' + encodeURIComponent(full));
             pom.setAttribute('download', `${turntable.playlist.activePlaylist}.txt`);
             pom.style.display = 'inline';
         });
