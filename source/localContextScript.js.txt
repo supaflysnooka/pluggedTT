@@ -280,6 +280,9 @@ const runTurntableCode = async () => {
                         isSC = true;
                     } else if (d.metadata.scid) {
                         isSC = true;
+                    } else if (d.track.title) {
+                        isSC = true;
+                    }
                     } else if (d.metadata.ytid) {
                         isYT = true;
                     }
