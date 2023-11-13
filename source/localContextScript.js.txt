@@ -286,7 +286,7 @@ const runTurntableCode = async () => {
                         url = `https://www.youtube.com/watch?v=${d.sourceid}`;
                     } else if (isSC) {
                         url = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${d.sourceid}`;
-                        title = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${d.track.title}`;
+                        title = `https://soundcloud.com/tracks/${d.trackid}`;
                     }
                     return `${d.metadata.artist},${d.metadata.song},${url},${title}`;
                 }).join('\n');
